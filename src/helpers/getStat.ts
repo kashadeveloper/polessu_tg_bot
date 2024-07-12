@@ -1,11 +1,13 @@
 import fs from "fs/promises";
 import { tabletojson } from "tabletojson";
 import { getLatestStat, updateUploadData } from "./updateConfigs";
-import { emitter } from "..";
+import { emitter } from "../index";
 import { checkDiff } from "./checkDiff";
 
 export async function getStat() {
-  const r = await tabletojson.convertUrl("https://abit.polessu.by/monit/?select=1,1,1");
+  const r = await tabletojson.convertUrl(
+    "https://abit.polessu.by/monit/?select=1,1,1"
+  );
 
   const oldStat = getLatestStat();
 
