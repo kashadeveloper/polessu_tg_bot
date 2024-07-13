@@ -128,7 +128,9 @@ emitter.on("statUpdated", async (text) => {
       text: text,
       parse_mode: "HTML",
       reply_markup: new InlineKeyboard().text("Статистика", "get_stats"),
-    });
+    }).catch(err => {
+      console.log(`Error while sending a notification`, err);
+    })
   });
 });
 
