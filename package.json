@@ -7,7 +7,6 @@
   "private": true,
   "dependencies": {
     "dotenv": "^16.4.5",
-    "getjsontable": "^1.2.3",
     "gramio": "^0.0.45",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
