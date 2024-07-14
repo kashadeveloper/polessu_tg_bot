@@ -15,6 +15,8 @@ import {
   subscribeChat,
   unsubscribeChat,
 } from "./helpers/updateConfigs";
+import { SPECS_ID } from "./constants";
+import { getSpecData } from "./helpers/updateFacultsStat";
 
 export const emitter = new EventEmitter();
 
@@ -84,7 +86,6 @@ async function statHandler(
 bot.command("stat", statHandler);
 
 bot.on("my_chat_member", (ctx) => {
-  //   if (ctx.isPM()) return;
   if (
     ctx.newChatMember.user.id === Number(process.env.BOT_ID) &&
     ctx.newChatMember.status === "kicked"
@@ -116,21 +117,67 @@ bot.command("unsubscribe", (context) => {
   return context.send("Отлично. Уведомления отключены");
 });
 
+bot.hears(/(\/spec ([0-9]+)|\/spec)/i, async (ctx) => {
+  if (!ctx.args) return;
+  const spec_id = Number(ctx.args[2]);
+  if (isNaN(spec_id)) {
+    let specNumbers = ``;
+    for (const [key, value] of Object.entries(SPECS_ID)) {
+      specNumbers += `<i>${value}: ${key}</i>\n`;
+    }
+    return ctx.send(
+      `Данная команда позволяет увидеть статистику по специальности\n\n<b>Пример использования: <code>/spec <i>НОМЕР_СПЕЦИАЛЬНОСТИ</i> </code></b>\n\nНомера специальностей:\n${specNumbers}`,
+      { parse_mode: "HTML" }
+    );
+  }
+  if (spec_id <= 0 || isNaN(spec_id) || spec_id > 17)
+    return ctx.send("Неверный номер специальности");
+
+  const spec_stat = await getSpecData(spec_id);
+  let specText = "";
+  let totalValueContest = 0;
+  let withoutContest = "";
+
+  for (const [key, value] of Object.entries(spec_stat.data)) {
+    if (key == "withoutContest") withoutContest = String(value);
+    if (key == "contest") {
+      if (!value) return;
+      for (const [key, keyValue] of Object.entries(value)) {
+        const countDocs = Number(keyValue);
+        totalValueContest += countDocs;
+        if (countDocs > 0) specText += `${key}: <b>${keyValue}</b>\n`;
+      }
+    }
+  }
+  return ctx.send(
+    `Информация по специальности <b>"${SPECS_ID[spec_id]}"</b>
+    Данные обновлены <b>${
+      spec_stat.updateTime
+    }</b>\n\n${specText}\n\nВсего (конкурс | без вступ. испыт.): ${totalValueContest} | ${
+      withoutContest ? withoutContest : 0
+    }`,
+    { parse_mode: "HTML" }
+  );
+});
+
 setInterval(getStat, 30000);
+getStat();
 
 emitter.on("statUpdated", async (text) => {
   const chats = getChatsList();
 
   chats.forEach(async (chat) => {
     if (chat == 0) return;
-    return await bot.api.sendMessage({
-      chat_id: chat,
-      text: text,
-      parse_mode: "HTML",
-      reply_markup: new InlineKeyboard().text("Статистика 📊", "get_stats"),
-    }).catch(err => {
-      console.log(`Error while sending a notification`, err);
-    })
+    return await bot.api
+      .sendMessage({
+        chat_id: chat,
+        text: text,
+        parse_mode: "HTML",
+        reply_markup: new InlineKeyboard().text("Статистика 📊", "get_stats"),
+      })
+      .catch((err) => {
+        console.log(`Error while sending a notification`, err);
+      });
   });
 });
 

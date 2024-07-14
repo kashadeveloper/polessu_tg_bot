@@ -1,13 +1,12 @@
-import fs from "fs/promises";
 import { tabletojson } from "tabletojson";
-import { getLatestStat, updateUploadData } from "./updateConfigs";
 import { emitter } from "../index";
 import { checkDiff } from "./checkDiff";
+import { getLatestStat, updateUploadData } from "./updateConfigs";
+import { updateSpecStat } from "./updateFacultsStat";
 
 export async function getStat() {
-  const r = await tabletojson.convertUrl(
-    "https://abit.polessu.by/monit/?select=1,1,1"
-  );
+  //https://abit.polessu.by/monit/?select=1,1,1
+  const r = await tabletojson.convertUrl("https://abit.polessu.by/monit/?select=1,1,1");
 
   const oldStat = getLatestStat();
 
@@ -26,10 +25,12 @@ export async function getStat() {
   for (let i = 0; i < secondTable.length; i++) {
     if (i < 2) continue;
 
+    const docsCount = Number(secondTable[i]["7"]);
+
     resultData.data.facults_contest[
       secondTable[i]["Инженерный_3"].replaceAll("*", "")
-    ] = Number(secondTable[i]["7"]);
-    resultData.data.totalDocumentsByContest += Number(secondTable[i]["7"]);
+    ] = isNaN(docsCount) ? 0 : docsCount;
+    resultData.data.totalDocumentsByContest += isNaN(docsCount) ? 0 : docsCount;
   }
 
   if (oldStat.updateDate !== updateDate) {
@@ -49,13 +50,17 @@ export async function getStat() {
         diff < 0 ? `(${diff})` : `(+${diff})`
       }</b>\n`;
     });
-    console.log(`Changes:\n\n${text}`);
     emitter.emit(
       "statUpdated",
       `Данные мониторинга обновлены <b>${resultData.updateDate}</b>:\n\n${
         text.length > 0 ? `${text}` : "<b>Нету изменений</b>\n\n"
-      }<a href="https://abit.polessu.by/monit/?select=1,1,1">Открыть мониторинг</a>`
+      }${
+        text.length > 0
+          ? "\n\n<b>Данные по специальностям обновлены (/spec)</b>"
+          : ""
+      }\n<a href="https://abit.polessu.by/monit/?select=1,1,1">Открыть мониторинг</a>`
     );
   }
   updateUploadData(resultData);
+  updateSpecStat(secondTable, updateDate);
 }
