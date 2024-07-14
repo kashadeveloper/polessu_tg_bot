@@ -1,4 +1,4 @@
-import { BALL_COLS_NAMES, SPECS_ID } from "src/constants";
+import { BALL_COLS_NAMES, SPECS_ID } from "./../constants";
 import fs from "fs/promises";
 import path from "path";
 import moment from "moment";
