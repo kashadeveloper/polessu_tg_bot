@@ -45,13 +45,7 @@ async function statHandler(
   ctx: MessageContext<Bot> | CallbackQueryContext<Bot>
 ) {
   try {
-    const data: {
-      updateDate: string;
-      data: {
-        totalDocumentsByContest: number;
-        facults_contest: Record<string, any>;
-      };
-    } = getLatestStat();
+    const data = getLatestStat();
     const date = new Date();
     let facultsText = "";
     for (const [key, value] of Object.entries(data.data.facults_contest)) {
@@ -64,7 +58,7 @@ async function statHandler(
           "DD.MM.YYYY HH:mm"
         )}\nПоследнее обновление: <b>${
           data.updateDate
-        }</b>\n\n${facultsText}\nВсего подавших заявление (только конкурс): ${
+        }</b>\n\n${facultsText}\nВсего подавших заявление: ${
           data.data.totalDocumentsByContest
         }\n\n<a href="https://abit.polessu.by/monit/?select=1,1,1">Открыть мониторинг</a>`,
         { parse_mode: "HTML" }
@@ -134,6 +128,7 @@ bot.hears(/(\/spec ([0-9]+)|\/spec)/i, async (ctx) => {
     return ctx.send("Неверный номер специальности");
 
   const spec_stat = await getSpecData(spec_id);
+  const stat = getLatestStat();
   let specText = "";
   let totalValueContest = 0;
   let withoutContest = "";
@@ -153,9 +148,9 @@ bot.hears(/(\/spec ([0-9]+)|\/spec)/i, async (ctx) => {
     `Информация по специальности <b>"${SPECS_ID[spec_id]}"</b>
     Данные обновлены <b>${
       spec_stat.updateTime
-    }</b>\n\n${specText}\n\nВсего (конкурс | без вступ. испыт.): ${totalValueContest} | ${
-      withoutContest ? withoutContest : 0
-    }`,
+    }</b>\n\n${specText}\n\nВсего | Конкурс | Без вступ. испыт. | Вне конкурса:\n<b>${
+      stat.data.facults_contest[SPECS_ID[spec_id]]
+    } | ${totalValueContest} | ${withoutContest ? withoutContest : 0}</b>`,
     { parse_mode: "HTML" }
   );
 });

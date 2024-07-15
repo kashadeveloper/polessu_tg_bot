@@ -33,7 +33,7 @@ export function getLastUpdateDate() {
   return config.stat.updateDate;
 }
 
-export function getLatestStat() {
+export function getLatestStat(): Record<string, any> {
   return config.stat;
 }
 

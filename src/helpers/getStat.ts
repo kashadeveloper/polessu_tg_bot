@@ -3,10 +3,14 @@ import { emitter } from "../index";
 import { checkDiff } from "./checkDiff";
 import { getLatestStat, updateUploadData } from "./updateConfigs";
 import { updateSpecStat } from "./updateFacultsStat";
+import fs from "fs/promises";
+import path from "path";
 
 export async function getStat() {
   //https://abit.polessu.by/monit/?select=1,1,1
-  const r = await tabletojson.convertUrl("https://abit.polessu.by/monit/?select=1,1,1");
+  const r = await tabletojson.convertUrl(
+    "https://abit.polessu.by/monit/?select=1,1,1"
+  );
 
   const oldStat = getLatestStat();
 
@@ -25,7 +29,7 @@ export async function getStat() {
   for (let i = 0; i < secondTable.length; i++) {
     if (i < 2) continue;
 
-    const docsCount = Number(secondTable[i]["7"]);
+    const docsCount = Number(secondTable[i]["План приема"]);
 
     resultData.data.facults_contest[
       secondTable[i]["Инженерный_3"].replaceAll("*", "")
