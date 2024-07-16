@@ -17,7 +17,7 @@ import {
 } from "./helpers/updateConfigs";
 import { SPECS_ID } from "./constants";
 import { getSpecData } from "./helpers/updateFacultsStat";
-import { isAdminRole } from "helpers/isAdmin";
+import { isAdminRole } from "./helpers/isAdmin";
 
 export const emitter = new EventEmitter();
 
