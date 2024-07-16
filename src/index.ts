@@ -17,6 +17,7 @@ import {
 } from "./helpers/updateConfigs";
 import { SPECS_ID } from "./constants";
 import { getSpecData } from "./helpers/updateFacultsStat";
+import { isAdminRole } from "helpers/isAdmin";
 
 export const emitter = new EventEmitter();
 
@@ -31,6 +32,11 @@ const bot = new Bot(process.env.TOKEN || "")
   });
 
 bot.command("subscribe", (context) => {
+  if (
+    (isChatSubscribed(context.chat.id) && context.isGroup()) ||
+    (isChatSubscribed(context.chat.id) && context.isSupergroup())
+  )
+    return;
   if (isChatSubscribed(context.chat.id))
     return context.send(
       "Данный чат уже подписан на уведомления об изменениях. Чтобы отписаться - используйте команду /unsubscribe"
@@ -102,9 +108,19 @@ bot.on("my_chat_member", (ctx) => {
   }
 });
 
-bot.command("unsubscribe", (context) => {
+bot.command("unsubscribe", async (context) => {
   if (!isChatSubscribed(context.chat.id))
     return context.send("Данный чат не подписан на уведомления");
+  if (!context.isPM()) {
+    const user_role = (
+      await bot.api.getChatMember({
+        chat_id: context.chat.id,
+        user_id: Number(context.from?.id),
+      })
+    ).status;
+    if (!isAdminRole(user_role) && context.from?.id != process.env.AUTHOR_ID)
+      return;
+  }
 
   unsubscribeChat(context.chat.id);
 

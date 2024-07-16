@@ -18,8 +18,9 @@ export async function updateSpecStat(
       withoutContest: 0,
       contest: {},
     };
-    let withoutContestField =
-      data[i][5] + ` | ${data[i][6].length ? data[i][6] : "0"}`;
+    let withoutContestField = `${data[i][5].length ? data[i][5] : "0"} | ${
+      data[i][6].length ? data[i][6] : "0"
+    }`;
     result.data[SPECS_ID[i - 1]]["withoutContest"] = withoutContestField;
     for (let j = 8; j < 78; j++) {
       const rowValue = Number(data[i][j]);
