@@ -18,6 +18,7 @@ import {
 import { SPECS_ID } from "./constants";
 import { getSpecData } from "./helpers/updateFacultsStat";
 import { isAdminRole } from "./helpers/isAdmin";
+import { num_word } from "./helpers/num_word";
 
 export const emitter = new EventEmitter();
 
@@ -57,14 +58,40 @@ async function statHandler(
     for (const [key, value] of Object.entries(data.data.facults_contest)) {
       facultsText += `${key}: <b>${value}</b>\n`;
     }
+    const a_date = moment(date);
+    const b_date = moment({
+      hour: 18,
+      minute: 0,
+      day: 17,
+      month: 6,
+      year: 2024,
+    });
+
+    const endDateFormat =
+      b_date.diff(a_date, "h") > 0
+        ? `${b_date.diff(a_date, "h")} ${num_word(b_date.diff(a_date, "hours"), [
+            "час",
+            "часа",
+            "часов",
+          ])}`
+        : `${
+            b_date.diff(a_date, "minute") > 0
+              ? `${b_date.diff(a_date, "minute")} ${num_word(
+                  b_date.diff(a_date, "minutes"),
+                  ["минута", "минуты", "минут"]
+                )}`
+              : `меньше минуты`
+          }`;
 
     return ctx
       .send(
         `Данные на ${moment(date).format(
           "DD.MM.YYYY HH:mm"
-        )}\nПоследнее обновление: <b>${
-          data.updateDate
-        }</b>\n\n${facultsText}\nВсего подавших заявление: ${
+        )}\nПоследнее обновление: <b>${data.updateDate}</b>\n${
+          b_date.diff(a_date) > 0
+            ? `\n<b>До окончания срока подачи документов: ${endDateFormat}</b>`
+            : `\n<b>Подача документов завершена 🎉</b>`
+        }\n\n${facultsText}\nВсего подавших заявление: ${
           data.data.totalDocumentsByContest
         }\n\n<a href="https://abit.polessu.by/monit/?select=1,1,1">Открыть мониторинг</a>`,
         { parse_mode: "HTML" }
