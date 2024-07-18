@@ -38,6 +38,11 @@ bot.command("subscribe", (context) => {
     (isChatSubscribed(context.chat.id) && context.isSupergroup())
   )
     return;
+
+  if (process.env.STOP_CHECKING === "true")
+    return context.send(
+      `Обновление данных мониторинга было остановлено. Подписаться на изменения невозможно`
+    );
   if (isChatSubscribed(context.chat.id))
     return context.send(
       "Данный чат уже подписан на уведомления об изменениях. Чтобы отписаться - используйте команду /unsubscribe"
