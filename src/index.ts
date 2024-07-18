@@ -69,11 +69,10 @@ async function statHandler(
 
     const endDateFormat =
       b_date.diff(a_date, "h") > 0
-        ? `${b_date.diff(a_date, "h")} ${num_word(b_date.diff(a_date, "hours"), [
-            "час",
-            "часа",
-            "часов",
-          ])}`
+        ? `${b_date.diff(a_date, "h")} ${num_word(
+            b_date.diff(a_date, "hours"),
+            ["час", "часа", "часов"]
+          )}`
         : `${
             b_date.diff(a_date, "minute") > 0
               ? `${b_date.diff(a_date, "minute")} ${num_word(
@@ -87,10 +86,12 @@ async function statHandler(
       .send(
         `Данные на ${moment(date).format(
           "DD.MM.YYYY HH:mm"
-        )}\nПоследнее обновление: <b>${data.updateDate}</b>\n${
+        )}\nПоследнее обновление: <b>${data.updateDate} (${
+          process.env.STOP_CHECKING === "true" ? "обновление остановлено" : ""
+        })</b>\n${
           b_date.diff(a_date) > 0
             ? `\n<b>До окончания срока подачи документов: ${endDateFormat}</b>`
-            : `\n<b>Подача документов завершена 🎉</b>`
+            : `\n<b>Подача документов завершена 🎉\n</b>`
         }\n\n${facultsText}\nВсего подавших заявление: ${
           data.data.totalDocumentsByContest
         }\n\n<a href="https://abit.polessu.by/monit/?select=1,1,1">Открыть мониторинг</a>`,
@@ -189,17 +190,19 @@ bot.hears(/(\/spec ([0-9]+)|\/spec)/i, async (ctx) => {
   }
   return ctx.send(
     `Информация по специальности <b>"${SPECS_ID[spec_id]}"</b>
-    Данные обновлены <b>${
-      spec_stat.updateTime
-    }</b>\n\n${specText}\n\nВсего | Конкурс | Без вступ. испыт. | Вне конкурса:\n<b>${
+    Данные обновлены <b>${spec_stat.updateTime} (${
+      process.env.STOP_CHECKING === "true" ? "обновление остановлено" : ""
+    })</b>\n\n${specText}\n\nВсего | Конкурс | Без вступ. испыт. | Вне конкурса:\n<b>${
       stat.data.facults_contest[SPECS_ID[spec_id]]
     } | ${totalValueContest} | ${withoutContest ? withoutContest : 0}</b>`,
     { parse_mode: "HTML" }
   );
 });
 
-setInterval(getStat, 30000);
-getStat();
+if (process.env.STOP_CHECKING !== "true") {
+  setInterval(getStat, 30000);
+  getStat();
+}
 
 emitter.on("statUpdated", async (text) => {
   const chats = getChatsList();
