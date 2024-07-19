@@ -32,7 +32,8 @@ const bot = new Bot(process.env.TOKEN || "")
     console.log(`Started @${info.username}: https://t.me/${info.username}`);
   });
 
-bot.on("message", (message) => {
+bot.on("message", (message, next) => {
+  next()
   console.log(`@${message.from?.username} (${message.chat.id}): ${message.text}`)
 })
 
