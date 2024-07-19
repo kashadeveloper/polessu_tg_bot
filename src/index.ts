@@ -32,6 +32,10 @@ const bot = new Bot(process.env.TOKEN || "")
     console.log(`Started @${info.username}: https://t.me/${info.username}`);
   });
 
+bot.on("message", (message) => {
+  console.log(`@${message.from?.username} (${message.chat.id}): ${message.text}`)
+})
+
 bot.command("subscribe", (context) => {
   if (
     (isChatSubscribed(context.chat.id) && context.isGroup()) ||
